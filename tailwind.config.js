@@ -1,0 +1,27 @@
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  
+  content: ["./app/**/*.{js,jsx,ts,tsx}",
+    "./components/**/*.{js,jsx,ts,tsx}"
+  ],
+  presets: [require("nativewind/preset")],
+  theme: {
+    extend: {
+      colors:{
+        'primary': '#ECE0D1',
+      },
+      textColor:{
+        'tcolor': '#424242',
+      },
+      backgroundColor:{
+        'button': '#2C3E50BF',
+      },
+      fontFamily:{
+        'lexend':['Lexend-Regular'],
+        'lexend-bold':['Lexend-Bold'],
+        'lexend-medium':['Lexend-Medium']
+      }
+    },
+  },
+  plugins: [],
+}
