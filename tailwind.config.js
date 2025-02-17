@@ -15,11 +15,13 @@ module.exports = {
       },
       backgroundColor:{
         'button': '#2C3E50BF',
+        'inputField': '#00897B'
       },
       fontFamily:{
         'lexend':['Lexend-Regular'],
         'lexend-bold':['Lexend-Bold'],
-        'lexend-medium':['Lexend-Medium']
+        'lexend-medium':['Lexend-Medium'],
+        'lexend-semibold':['Lexend-SemiBold']
       }
     },
   },

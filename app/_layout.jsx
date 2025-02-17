@@ -10,6 +10,7 @@ const RootLayout = () => {
     "Lexend-Regular": require("../assets/fonts/Lexend-Regular.ttf"),
     "Lexend-Bold": require("../assets/fonts/Lexend-Bold.ttf"),
     "Lexend-Medium": require("../assets/fonts/Lexend-Medium.ttf"),
+    "Lexend-SemiBold": require("../assets/fonts/Lexend-SemiBold.ttf"),
   });
   
   useEffect(() => {
@@ -30,6 +31,7 @@ const RootLayout = () => {
   return (
     <Stack>
         <Stack.Screen name='index' options={{headerShown: false}} />
+        <Stack.Screen name='(auth)' options={{headerShown: false}} />
     </Stack>
   )
 }
