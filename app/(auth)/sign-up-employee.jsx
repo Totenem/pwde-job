@@ -4,9 +4,10 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import InputField from '../../components/InputField'
 import { useState } from 'react'
 import CustomButton  from '../../components/CustomButton'
-import { Link } from 'expo-router'
+import { Link, router } from 'expo-router'
 
 const SignUpEmployee = () => {
+  // use state function for the form
   const [form, setForm] = useState({
     fullName: '',
     email: '',
@@ -15,10 +16,11 @@ const SignUpEmployee = () => {
     role: 'employee'
   })
 
+  // Function for the button
   const [isSubmitting, setisSubmitting] = useState(false)
 
   const submit = () =>{
-
+    router.push('/additional-info-employee')
   }
 
   return (

@@ -1,11 +1,10 @@
 import { View, Text, ScrollView, Image } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { StatusBar } from 'expo-status-bar'
 import InputField from '../../components/InputField'
 import CustomButton  from '../../components/CustomButton'
 import { useState } from 'react'
-import { Link } from 'expo-router'
+import { Link, router} from 'expo-router'
 
 const SignIn = () => {
   const [form, setForm] = useState({
@@ -13,10 +12,10 @@ const SignIn = () => {
     password: '',
   })
 
-  const [isSubmitting, setisSubmitting] = useState(false)
+  const [isSigning, setisSigning] = useState(false)
 
   const signin = () =>{
-
+    router.push('/home')
   }
 
   return (
@@ -60,7 +59,7 @@ const SignIn = () => {
             title= "Sign In"
             handlePress = {signin}
             containerStyles = "mt-7"
-            isLoading = {isSubmitting}
+            isLoading = {isSigning}
             textStyles="font-lexend-bold"
           />
         </View>
