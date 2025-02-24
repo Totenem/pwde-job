@@ -14,6 +14,10 @@ const AdditionalInfo = () => {
           name='additional-info-employer' 
           options={{headerShown: false}} 
         />
+        <Stack.Screen
+          name='chat'
+          options={{headerShown: false}}
+        />
        </Stack>
     </>
   )

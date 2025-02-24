@@ -13,6 +13,8 @@ import play from "../assets/icons/play.png";
 import podlock from "../assets/icons/podlock.png";
 import notification from "../assets/icons/notification.png";
 import message from "../assets/icons/message.png";
+import settings from "../assets/icons/settings.png";
+import security from "../assets/icons/security.png";
 
 export default {
   play,
@@ -29,5 +31,7 @@ export default {
   eye,
   podlock,
   notification,
-  message
+  message,
+  settings,
+  security,
 };

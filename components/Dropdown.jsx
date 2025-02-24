@@ -1,21 +1,26 @@
-import React, { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, ScrollView, TouchableWithoutFeedback } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, TextInput, TouchableOpacity, Text, ScrollView, Modal, Pressable } from 'react-native';
 
-const Dropdown = ({ otherStyles, title, options, placeholder = 'Select an option', onSelect }) => {
-    const [inputValue, setInputValue] = useState('');
+const Dropdown = ({ otherStyles, title, options, placeholder = 'Select an option', onSelect, value }) => {
+    const [inputValue, setInputValue] = useState(value || '');
     const [isDropdownVisible, setDropdownVisible] = useState(false);
   
+    useEffect(() => {
+      if (value !== undefined) {
+        setInputValue(value);
+      }
+    }, [value]);
+
     const filteredOptions = options.filter(option =>
       option.toLowerCase().includes(inputValue.toLowerCase())
     );
   
     return (
-      <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
-        <View className={`${otherStyles}`}>
-          <Text className="text-base text-tcolor font-lexend-bold">{title}</Text>
+      <View className={`${otherStyles || ''}`}>
+        {title && <Text className="text-base text-tcolor font-lexend-bold mb-2">{title}</Text>}
+        <View>
           <TextInput
-            title={title}
-            className=" text-tcolor font-lexend-semibold text-base border-2 w-full h-16 px-4 bg-inputField rounded-2xl flex-row"
+            className="text-tcolor font-lexend-semibold text-base border-2 w-full h-12 px-4 bg-inputField rounded-xl"
             placeholder={placeholder}
             value={inputValue}
             onChangeText={text => {
@@ -25,30 +30,42 @@ const Dropdown = ({ otherStyles, title, options, placeholder = 'Select an option
             onFocus={() => setDropdownVisible(true)}
           />
           
-          {isDropdownVisible && (
-            <View className="absolute top-12 w-full border border-gray-300 rounded-md bg-white shadow-md">
-              <ScrollView
-                nestedScrollEnabled
-                className="max-h-40"
-              >
-                {filteredOptions.map((item, index) => (
-                  <TouchableOpacity
-                    key={index}
-                    className="px-3 py-2 border-b border-gray-200"
-                    onPress={() => {
-                      setInputValue(item);
-                      setDropdownVisible(false);
-                      onSelect && onSelect(item);
-                    }}
+          <Modal
+            visible={isDropdownVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setDropdownVisible(false)}
+          >
+            <Pressable 
+              className="flex-1 bg-black/50 justify-center items-center"
+              onPress={() => setDropdownVisible(false)}
+            >
+              <View className="w-[80%] mx-4 bg-white rounded-2xl overflow-hidden">
+                <Pressable>
+                  <ScrollView
+                    nestedScrollEnabled
+                    className="max-h-80"
                   >
-                    <Text className="text-base">{item}</Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-          )}
+                    {filteredOptions.map((item, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        className="px-6 py-4 border-b border-gray-100 active:bg-gray-100"
+                        onPress={() => {
+                          setInputValue(item);
+                          setDropdownVisible(false);
+                          onSelect && onSelect(item);
+                        }}
+                      >
+                        <Text className="text-base font-lexend text-center">{item}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </Pressable>
+              </View>
+            </Pressable>
+          </Modal>
         </View>
-      </TouchableWithoutFeedback>
+      </View>
     );
   };
 

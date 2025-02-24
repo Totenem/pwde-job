@@ -33,6 +33,11 @@ export default function App() {
               textStyles="font-lexend-bold"
           />
 
+          <View className="gap-2 pt-5 justify-center items-center flex-row">
+            <Text className="font-lexend">
+              Already have an account? <Link href="/sign-in" className="font-lexend-bold">Sign In</Link>
+            </Text>
+          </View>
         </View>
       </ScrollView>
       <StatusBar backgroundColor='#ECE0D1' />
