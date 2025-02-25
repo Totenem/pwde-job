@@ -6,7 +6,8 @@
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "test": "jest"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "1.23.1",
@@ -14,6 +15,8 @@
     "@supabase/supabase-js": "^2.48.1",
     "expo": "~52.0.35",
     "expo-constants": "~17.0.6",
+    "expo-document-picker": "~13.0.3",
+    "expo-image-picker": "~16.0.6",
     "expo-linking": "~7.0.5",
     "expo-router": "~4.0.17",
     "expo-status-bar": "~2.0.1",
@@ -26,12 +29,11 @@
     "react-native-screens": "~4.4.0",
     "react-native-url-polyfill": "^2.0.0",
     "tailwindcss": "^3.4.17",
-    "expo-image-picker": "~16.0.6",
-    "expo-document-picker": "~13.0.3"
+    "expo-secure-store": "~14.0.1",
+    "expo-file-system": "~18.0.11"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
     "babel-preset-expo": "^12.0.8"
-  },
-  "private": true
+  }
 }
