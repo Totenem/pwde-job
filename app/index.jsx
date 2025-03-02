@@ -4,9 +4,28 @@ import { Link, Redirect, router} from 'expo-router';
 import { Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import CustomButton from '../components/CustomButton';
+import React, { useEffect, useState } from 'react';
+import { supabase } from '../lib/supabase';
 // import '../assets/images'
 
 export default function App() {
+  // Check for existing session when component mounts
+  useEffect(() => {
+    checkUser();
+  }, []);
+  
+  // Function to verify if user is already authenticated
+  const checkUser = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+      // Redirect authenticated users to home screen
+      router.replace('/home');
+    } else {
+      // Redirect unauthenticated users to sign-in screen
+      router.replace('/sign-in');
+    }
+  };
+
   return (
     <SafeAreaView className="h-full bg-primary">
       <ScrollView contentContainerStyle={{height: '100%',}}>

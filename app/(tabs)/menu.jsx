@@ -1,7 +1,7 @@
 // Import necessary components and libraries
 import { View, Text, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import BoxRouting from '../../components/BoxRouting'
 import { router } from 'expo-router'
 import icons from '../../constants/icons'
@@ -9,6 +9,34 @@ import { supabase } from '../../lib/supabase'
 
 // Menu component - Displays the main menu options for navigation and user actions
 const Menu = () => {
+  const [userData, setUserData] = useState(null)
+
+  // Fetch user profile data when component mounts
+  useEffect(() => {
+    fetchUserProfile()
+  }, [])
+
+  // Function to fetch user profile data from Supabase
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+
+        if (error) throw error
+        if (data) {
+          setUserData(data)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error.message)
+    }
+  }
+
   // Function to handle user sign out
   // Uses Supabase authentication and redirects to sign-in page
   const handleSignOut = async () => {
@@ -52,6 +80,17 @@ const Menu = () => {
             isLoading={false}
             textStyles="font-lexend-bold"
           />
+          {/* Job Listings button - Only visible for employer accounts */}
+          {userData?.user_type === 'employer' && (
+            <BoxRouting
+              title="Job Listings"
+              icon={icons.bookmark}
+              handlePress={() => router.push('/job-listings')}
+              containerStyles="mt-7"
+              isLoading={false}
+              textStyles="font-lexend-bold"
+            />
+          )}
           {/* Sign out button with logout functionality */}
           <BoxRouting
             title="Sign Out"
