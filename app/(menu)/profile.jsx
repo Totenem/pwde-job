@@ -84,7 +84,13 @@ const Profile = () => {
 
           <CustomButton
             title="EDIT PROFILE"
-            handlePress={() => router.push('/additional-info-employee')}
+            handlePress={() => {
+              if (userData?.user_type === 'employee') {
+                router.push('/additional-info-employee')
+              } else if (userData?.user_type === 'employer') {
+                router.push('/additional-info-employer')
+              }
+            }}
             containerStyles="w-full mt-7"
             textStyles="font-lexend-bold"
           />

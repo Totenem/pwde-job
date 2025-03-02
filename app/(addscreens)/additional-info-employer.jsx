@@ -1,109 +1,171 @@
 import { View, Text, ScrollView,} from 'react-native'
-import React from 'react'
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import InputField from '../../components/InputField'
 import CustomButton from '../../components/CustomButton'
 import Dropdown from '../../components/Dropdown'
-import BigInputField from '../../components/BigInputField'
+import ProfilePicture from '../../components/ProfilePicture'
+import EmployerIdUpload from '../../components/EmployerIdUpload'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { router } from 'expo-router'
+import * as SecureStore from 'expo-secure-store'
+import { supabase } from '../../lib/supabase'
 
 const AdditionalInfoEmployer = () => {
+  const [userData, setUserData] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [availableSkills, setAvailableSkills] = useState([])
+  const [selectedSkills, setSelectedSkills] = useState([])
+  const [uploadError, setUploadError] = useState(null)
+  const [avatarUrl, setAvatarUrl] = useState(null)
+  const [employerIdUrl, setEmployerIdUrl] = useState(null)
+  // Fetch necessary data on component mount
+  useEffect(() => {
+    fetchUserProfile()
+    fetchAvailableSkills()
+  }, [])
+  const fetchUserProfile = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
 
-  // Function for teh dropdown
-  const skill = ['Photography', 'Photoshop', 'Sewing', 'Painting', 'Labour', 'Data Entry', 'Customer Rep'];
+        if (error) throw error
+        if (data) setUserData(data)
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
+  const fetchAvailableSkills = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('skills')
+        .select('id, name, category')
+        .order('category', { ascending: true })
 
-  const handleSelect = (selectedItem) => {
-    console.log('Selected:', selectedItem);
-  };
+      if (error) throw error
+      if (data) setAvailableSkills(data)
+    } catch (error) {
+      console.error('Error fetching skills:', error)
+    }
+  }
+  const handleSkillSelect = (skill, index) => {
+    const newSelectedSkills = [...selectedSkills]
+    newSelectedSkills[index] = skill
+    setSelectedSkills(newSelectedSkills)
+  }
+  const handleSubmit = async () => {
+    if (!employerIdUrl) {
+      setUploadError('Please upload your employer ID')
+      return
+    }
 
-  // Function for the button
-  const [isSubmitting, setisSubmitting] = useState(false)
+    setIsSubmitting(true)
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) throw new Error('Error getting session: ' + sessionError.message)
+      if (!session?.user?.id) throw new Error('No active session. Please sign in again.')
 
+      const userId = session.user.id
 
-  const skip = () =>{
+      // Update profile with employer ID URL, avatar URL, and selected skills
+      const updateData = {
+        employer_id: employerIdUrl,
+        skills: selectedSkills.filter(Boolean)
+      }
+
+      if (avatarUrl) {
+        updateData.avatar_url = avatarUrl
+      }
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update(updateData)
+        .eq('id', userId)
+
+      if (updateError) throw updateError
+
+      await SecureStore.deleteItemAsync('employerIdFile')
+      router.push('/home')
+    } catch (error) {
+      console.error('Error during submission:', error)
+      setUploadError(error.message || 'Error updating profile')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+  const skip = () => {
     router.push('/home')
   }
-
-  const register = () =>{
-    router.push('/home')
-  }
-
   return (
     <SafeAreaView className="h-full bg-primary">
       <ScrollView contentContainerStyle={{ flexGrow: 1}}>
-        <View className = "w-full justify-center h-auto px-4 my-4 min-h-[90vh]">
+        <View className="w-full justify-center h-auto px-4 my-4 min-h-[90vh]">
           <InputField 
             title='Name'
+            value={userData?.full_name}
             placeholder={'John Doe'}
-            editType={false} // Property I set to make this non editable or not (false = not editable, True = editable)
+            editType={false}
           />
 
-          <InputField
-            title='Business Name'
-            placeholder={'Enter Bussines Name'}
-            editType={true} // Property I set to make this non editable or not (false = not editable, True = editable)
+          <ProfilePicture
+            onImageSelect={setAvatarUrl}
+            onError={setUploadError}
+            initialImageUrl={userData?.avatar_url}
+            isSubmitting={isSubmitting}
+            userId={userData?.id}
           />
-          
 
-
-          <View className = "mt-7">
-            <BigInputField
-              inputViewSize='h-40'
-              title='ABOUT THE BUSINESS'
-              placeholder={'Enter Business Description'}
-              editType={true} // Property I set to make this non editable or not (false = not editable, True = editable)
-            />
-          </View>
-
-          {/* <View className = "mt-7">
-            <InputField
-              title='LIST YOUR SKILLS'
-              placeholder={'Skill 1'}
-              editType={true} // Property I set to make this non editable or not (false = not editable, True = editable)
-            />
-            <InputField
-              placeholder={'Skill 1'}
-              editType={true} // Property I set to make this non editable or not (false = not editable, True = editable)
-            />           
-            <InputField
-              placeholder={'Skill 1'}
-              editType={true} // Property I set to make this non editable or not (false = not editable, True = editable)
-            />
-          </View> */}
-
+          <EmployerIdUpload
+            onFileSelect={setEmployerIdUrl}
+            onError={setUploadError}
+            initialValue={userData?.employer_id}
+            isSubmitting={isSubmitting}
+            userId={userData?.id}
+          />
 
           <View className="mt-2">
             <Dropdown
               otherStyles='mt-5'
-              title='SELECT YOU ARE LOOKING FOR'
-              options={skill}
+              title='SELECT SKILLS'
+              options={availableSkills.map(skill => skill.name)}
               placeholder="Select a Skill"
-              onSelect={handleSelect}
+              onSelect={(skill) => handleSkillSelect(skill, 0)}
+              value={selectedSkills[0]}
             />
             <Dropdown
-              options={skill}
+              options={availableSkills.map(skill => skill.name)}
               placeholder="Select a Skill"
-              onSelect={handleSelect}
+              onSelect={(skill) => handleSkillSelect(skill, 1)}
+              value={selectedSkills[1]}
             />
             <Dropdown
-              options={skill}
+              options={availableSkills.map(skill => skill.name)}
               placeholder="Select a Skill"
-              onSelect={handleSelect}
+              onSelect={(skill) => handleSkillSelect(skill, 2)}
+              value={selectedSkills[2]}
             />
           </View>
 
-          <View className="flex-row justify-center  mt-5">
+          {uploadError && (
+            <Text className="text-red-500 text-center mt-2">{uploadError}</Text>
+          )}
+
+          <View className="flex-row justify-center mt-5">
             <CustomButton 
               title="SKIP"
               handlePress={skip}
-              containerStyles="w-44 mr-8 "
+              containerStyles="w-44 mr-8"
               isLoading={isSubmitting}
               textStyles="font-lexend-bold"
             />
             <CustomButton 
-              title="REGISTER"
-              handlePress={register}
+              title="SAVE"
+              handlePress={handleSubmit}
               containerStyles="w-44"
               isLoading={isSubmitting}
               textStyles="font-lexend-bold"

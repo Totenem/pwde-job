@@ -135,7 +135,7 @@ const SignIn = () => {
           <View className="gap-2 pt-5 justify-center items-center flex-row">
             <Text className="font-lexend">
               Don't have an account?{' '}
-              <Link href="/sign-up-employee" className="font-lexend-bold">
+              <Link href="/onboarding" className="font-lexend-bold">
                 Sign Up
               </Link>
             </Text>
