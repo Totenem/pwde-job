@@ -11,24 +11,61 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
+  // Store jobs in a ref to access current value in panResponder
+  const jobsRef = useRef([]);
+  
+  // Update ref whenever jobs state changes
+  useEffect(() => {
+    jobsRef.current = jobs;
+    console.log('Jobs state updated - Current jobs count:', jobs.length);
+    console.log('Jobs data:', JSON.stringify(jobs.map(job => job.title)));
+  }, [jobs]);
+  
   const position = useRef(new Animated.ValueXY()).current;
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onPanResponderMove: (event, gesture) => {
-        position.setValue({ x: gesture.dx, y: 0 });
-      },
-      onPanResponderRelease: (event, gesture) => {
-        if (gesture.dx > SWIPE_THRESHOLD) {
-          swipeRight();
-        } else if (gesture.dx < -SWIPE_THRESHOLD) {
-          swipeLeft();
-        } else {
-          resetPosition();
-        }
-      },
-    })
-  ).current;
+  // Create panResponder as a ref but don't initialize it yet
+  const panResponder = useRef(null);
+  
+  // Initialize or update panResponder when loading state changes or jobs are updated
+  useEffect(() => {
+    // Only create the panResponder when not loading and jobs are available
+    if (!loading && jobs.length > 0) {
+      panResponder.current = PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderMove: (event, gesture) => {
+          // Access jobs through ref to get current value
+          const currentJobs = jobsRef.current;
+          // Only allow movement if there are jobs available
+          if (currentJobs.length > 0 && currentIndex < currentJobs.length) {
+            position.setValue({ x: gesture.dx, y: 0 });
+          }
+        },
+        onPanResponderRelease: (event, gesture) => {
+          console.log('Swipe detected - dx:', gesture.dx);
+          
+          // Access jobs through ref to get current value
+          const currentJobs = jobsRef.current;
+          console.log('Current jobs in panResponder:', currentJobs.length);
+          
+          // Only process swipes if there are jobs available
+          if (currentJobs.length === 0 || currentIndex >= currentJobs.length) {
+            console.log('No jobs available to swipe on');
+            return;
+          }
+          
+          if (gesture.dx > SWIPE_THRESHOLD) {
+            console.log('Swipe RIGHT detected - threshold passed');
+            swipeRight();
+          } else if (gesture.dx < -SWIPE_THRESHOLD) {
+            console.log('Swipe LEFT detected - threshold passed');
+            swipeLeft();
+          } else {
+            console.log('Swipe threshold not met, resetting position');
+            resetPosition();
+          }
+        },
+      });
+    }
+  }, [loading, jobs.length, currentIndex]);
 
   useEffect(() => {
     fetchJobs();
@@ -37,37 +74,94 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
   const fetchJobs = async () => {
     try {
       setLoading(true);
+      console.log('Fetching jobs...');
       
-      // Fetch jobs from Supabase
+      // Get current user session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        console.log('No active session found');
+        setError('Please sign in to view jobs');
+        setLoading(false);
+        return;
+      }
+      
+      console.log('User authenticated:', session.user.id);
+      
+      // Fetch jobs from Supabase that are open
       const { data: jobsData, error: jobsError } = await supabase
         .from('jobs')
         .select('*')
         .eq('status', 'open');
 
-      if (jobsError) throw jobsError;
+      if (jobsError) {
+        console.error('Error fetching jobs:', jobsError);
+        throw jobsError;
+      }
+      
+      console.log('Total open jobs found:', jobsData ? jobsData.length : 0);
+      
+      if (!jobsData || jobsData.length === 0) {
+        console.log('No open jobs available');
+        setJobs([]);
+        setLoading(false);
+        return;
+      }
+      
+      // Get user's job applications
+      const { data: applications, error: applicationsError } = await supabase
+        .from('job_applications')
+        .select('job_id')
+        .eq('applicant_id', session.user.id);
+        
+      if (applicationsError) {
+        console.error('Error fetching applications:', applicationsError);
+        throw applicationsError;
+      }
+      
+      // Filter out jobs that the user has already applied to
+      const appliedJobIds = applications ? applications.map(app => app.job_id) : [];
+      console.log('User has applied to', appliedJobIds.length, 'jobs');
+      
+      const filteredJobs = jobsData.filter(job => !appliedJobIds.includes(job.id));
+      console.log('Jobs available after filtering:', filteredJobs.length);
+      
+      if (filteredJobs.length === 0) {
+        console.log('No jobs available after filtering out applied jobs');
+        setJobs([]);
+        setLoading(false);
+        return;
+      }
 
       // Get employer details for each job
+      console.log('Fetching employer details for jobs...');
       const jobsWithEmployers = await Promise.all(
-        jobsData.map(async (job) => {
-          const { data: employerData, error: employerError } = await supabase
-            .from('profiles')
-            .select('full_name, email')
-            .eq('id', job.employer_id)
-            .single();
+        filteredJobs.map(async (job) => {
+          try {
+            const { data: employerData, error: employerError } = await supabase
+              .from('profiles')
+              .select('full_name, email')
+              .eq('id', job.employer_id)
+              .single();
 
-          if (employerError) {
-            console.error('Error fetching employer:', employerError);
+            if (employerError) {
+              console.error('Error fetching employer for job', job.id, ':', employerError);
+              return { ...job, employer: { full_name: 'Unknown', email: 'Unknown' } };
+            }
+
+            return { ...job, employer: employerData };
+          } catch (err) {
+            console.error('Exception when processing job', job.id, ':', err);
             return { ...job, employer: { full_name: 'Unknown', email: 'Unknown' } };
           }
-
-          return { ...job, employer: employerData };
         })
       );
 
+      console.log('Final jobs with employers:', jobsWithEmployers.length);
       setJobs(jobsWithEmployers);
     } catch (err) {
       console.error('Error fetching jobs:', err);
-      setError('Failed to load jobs');
+      setError('Failed to load jobs: ' + (err.message || 'Unknown error'));
     } finally {
       setLoading(false);
     }
@@ -80,36 +174,111 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
     }).start();
   };
 
-  const swipeRight = () => {
+  const swipeRight = async () => {
+    console.log('swipeRight function called');
+    console.log('Jobs array length:', jobs.length);
+    console.log('Current index:', currentIndex);
+    
+    // Check if there are any jobs and if the current index is valid before proceeding
+    if (jobs.length === 0 || currentIndex >= jobs.length) {
+      console.log('No valid job to apply to');
+      return;
+    }
+
+    const currentJob = jobs[currentIndex];
+    console.log('Current job data:', currentJob ? JSON.stringify(currentJob.title) : 'undefined');
+    
+    if (!currentJob || !currentJob.id) {
+      console.error('Invalid job data at index:', currentIndex);
+      return;
+    }
+
     Animated.timing(position, {
       toValue: { x: SCREEN_WIDTH, y: 0 },
       duration: 250,
       useNativeDriver: false,
-    }).start(() => {
-      const currentJob = jobs[currentIndex];
-      if (currentJob) {
-        console.log('Applied to job:', currentJob.title);
+    }).start(async () => {
+      try {
+        console.log('Applying to job:', currentJob.title);
+        
+        // Get current user session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (!session) {
+          console.error('No active session found. Please sign in again.');
+          return;
+        }
+
+        // Create job application record
+        const { data, error } = await supabase
+          .from('job_applications')
+          .insert({
+            job_id: currentJob.id,
+            applicant_id: session.user.id,
+            status: 'pending',
+          });
+          
+        if (error) {
+          console.error('Error applying to job:', error.message, error.details);
+        } else {
+          console.log('Successfully applied to job:', currentJob.title);
+          
+          try {
+            // Create notification for the employer
+            const { error: notificationError } = await supabase
+              .from('notifications')
+              .insert({
+                user_id: currentJob.employer_id,
+                type: 'job-application',
+                title: 'New Job Application',
+                message: `Someone applied to your job: ${currentJob.title}`,
+              });
+              
+            if (notificationError) {
+              console.error('Error creating notification:', notificationError);
+            }
+          } catch (notificationError) {
+            console.error('Error in notification process:', notificationError);
+            // Continue execution even if notification fails
+          }
+        }
+        
         if (onSwipeRight) onSwipeRight(currentJob);
-      } else {
-        console.log('No job to apply to');
+      } catch (error) {
+        console.error('Error in job application process:', error);
+      } finally {
+        // Always move to the next card, even if there was an error
+        nextCard();
       }
-      nextCard();
     });
   };
 
   const swipeLeft = () => {
+    console.log('swipeLeft function called');
+    console.log('Jobs array length:', jobs.length);
+    console.log('Current index:', currentIndex);
+    
+    // Check if there are any jobs and if the current index is valid before proceeding
+    if (jobs.length === 0 || currentIndex >= jobs.length) {
+      console.log('No valid job to ignore');
+      return;
+    }
+
+    const currentJob = jobs[currentIndex];
+    console.log('Current job data:', currentJob ? JSON.stringify(currentJob.title) : 'undefined');
+    
+    if (!currentJob) {
+      console.error('Invalid job data at index:', currentIndex);
+      return;
+    }
+
     Animated.timing(position, {
       toValue: { x: -SCREEN_WIDTH, y: 0 },
       duration: 250,
       useNativeDriver: false,
     }).start(() => {
-      const currentJob = jobs[currentIndex];
-      if (currentJob) {
-        console.log('Ignored job:', currentJob.title);
-        if (onSwipeLeft) onSwipeLeft(currentJob);
-      } else {
-        console.log('No job to ignore');
-      }
+      console.log('Ignored job:', currentJob.title);
+      if (onSwipeLeft) onSwipeLeft(currentJob);
       nextCard();
     });
   };
@@ -191,7 +360,7 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
   return (
     <Animated.View 
       style={[styles.cardContainer, getCardStyle()]} 
-      {...panResponder.panHandlers}
+      {...(panResponder.current ? panResponder.current.panHandlers : {})}
     >
       <View style={styles.card}>
         <Text style={styles.jobTitle}>{job.title}</Text>

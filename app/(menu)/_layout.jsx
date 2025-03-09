@@ -34,6 +34,10 @@ const MenuLayout = () => {
           name='job/[id]'
           options={{headerShown: false}}
         />
+        <Stack.Screen
+          name='job-applicants/[id]'
+          options={{headerShown: false}}
+        />
        </Stack>
     </>
   )
