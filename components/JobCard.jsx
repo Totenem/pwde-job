@@ -25,47 +25,45 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
   // Create panResponder as a ref but don't initialize it yet
   const panResponder = useRef(null);
   
-  // Initialize or update panResponder when loading state changes or jobs are updated
+  // Initialize panResponder based on both currentIndex and loading state
   useEffect(() => {
     // Only create the panResponder when not loading and jobs are available
-    if (!loading && jobs.length > 0) {
-      panResponder.current = PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onPanResponderMove: (event, gesture) => {
-          // Access jobs through ref to get current value
-          const currentJobs = jobsRef.current;
-          // Only allow movement if there are jobs available
-          if (currentJobs.length > 0 && currentIndex < currentJobs.length) {
-            position.setValue({ x: gesture.dx, y: 0 });
-          }
-        },
-        onPanResponderRelease: (event, gesture) => {
-          console.log('Swipe detected - dx:', gesture.dx);
-          
-          // Access jobs through ref to get current value
-          const currentJobs = jobsRef.current;
-          console.log('Current jobs in panResponder:', currentJobs.length);
-          
-          // Only process swipes if there are jobs available
-          if (currentJobs.length === 0 || currentIndex >= currentJobs.length) {
-            console.log('No jobs available to swipe on');
-            return;
-          }
-          
-          if (gesture.dx > SWIPE_THRESHOLD) {
-            console.log('Swipe RIGHT detected - threshold passed');
-            swipeRight();
-          } else if (gesture.dx < -SWIPE_THRESHOLD) {
-            console.log('Swipe LEFT detected - threshold passed');
-            swipeLeft();
-          } else {
-            console.log('Swipe threshold not met, resetting position');
-            resetPosition();
-          }
-        },
-      });
-    }
-  }, [loading, jobs.length, currentIndex]);
+    panResponder.current = PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onPanResponderMove: (event, gesture) => {
+        // Access jobs through ref to get current value
+        const currentJobs = jobsRef.current;
+        // Only allow movement if there are jobs available
+        if (currentJobs.length > 0 && currentIndex < currentJobs.length) {
+          position.setValue({ x: gesture.dx, y: 0 });
+        }
+      },
+      onPanResponderRelease: (event, gesture) => {
+        console.log('Swipe detected - dx:', gesture.dx);
+        
+        // Access jobs through ref to get current value
+        const currentJobs = jobsRef.current;
+        console.log('Current jobs in panResponder:', currentJobs.length);
+        
+        // Only process swipes if there are jobs available
+        if (currentJobs.length === 0 || currentIndex >= currentJobs.length) {
+          console.log('No jobs available to swipe on');
+          return;
+        }
+        
+        if (gesture.dx > SWIPE_THRESHOLD) {
+          console.log('Swipe RIGHT detected - threshold passed');
+          swipeRight();
+        } else if (gesture.dx < -SWIPE_THRESHOLD) {
+          console.log('Swipe LEFT detected - threshold passed');
+          swipeLeft();
+        } else {
+          console.log('Swipe threshold not met, resetting position');
+          resetPosition();
+        }
+      },
+    });
+  }, [currentIndex, loading, jobs.length]); // Depend on loading state and jobs.length as well
 
   useEffect(() => {
     fetchJobs();
@@ -176,16 +174,18 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
 
   const swipeRight = async () => {
     console.log('swipeRight function called');
-    console.log('Jobs array length:', jobs.length);
+    // Access jobs through ref to get current value
+    const currentJobs = jobsRef.current;
+    console.log('Jobs array length:', currentJobs.length);
     console.log('Current index:', currentIndex);
     
     // Check if there are any jobs and if the current index is valid before proceeding
-    if (jobs.length === 0 || currentIndex >= jobs.length) {
+    if (currentJobs.length === 0 || currentIndex >= currentJobs.length) {
       console.log('No valid job to apply to');
       return;
     }
 
-    const currentJob = jobs[currentIndex];
+    const currentJob = currentJobs[currentIndex];
     console.log('Current job data:', currentJob ? JSON.stringify(currentJob.title) : 'undefined');
     
     if (!currentJob || !currentJob.id) {
@@ -223,24 +223,24 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
         } else {
           console.log('Successfully applied to job:', currentJob.title);
           
-          try {
-            // Create notification for the employer
-            const { error: notificationError } = await supabase
-              .from('notifications')
-              .insert({
-                user_id: currentJob.employer_id,
-                type: 'job-application',
-                title: 'New Job Application',
-                message: `Someone applied to your job: ${currentJob.title}`,
-              });
+          // try {
+          //   // Create notification for the employer
+          //   const { error: notificationError } = await supabase
+          //     .from('notifications')
+          //     .insert({
+          //       user_id: currentJob.employer_id,
+          //       type: 'job-application',
+          //       title: 'New Job Application',
+          //       message: `Someone applied to your job: ${currentJob.title}`,
+          //     });
               
-            if (notificationError) {
-              console.error('Error creating notification:', notificationError);
-            }
-          } catch (notificationError) {
-            console.error('Error in notification process:', notificationError);
-            // Continue execution even if notification fails
-          }
+          //   if (notificationError) {
+          //     console.error('Error creating notification:', notificationError);
+          //   }
+          // } catch (notificationError) {
+          //   console.error('Error in notification process:', notificationError);
+          //   // Continue execution even if notification fails
+          // }
         }
         
         if (onSwipeRight) onSwipeRight(currentJob);
@@ -255,16 +255,18 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
 
   const swipeLeft = () => {
     console.log('swipeLeft function called');
-    console.log('Jobs array length:', jobs.length);
+    // Access jobs through ref to get current value
+    const currentJobs = jobsRef.current;
+    console.log('Jobs array length:', currentJobs.length);
     console.log('Current index:', currentIndex);
     
     // Check if there are any jobs and if the current index is valid before proceeding
-    if (jobs.length === 0 || currentIndex >= jobs.length) {
+    if (currentJobs.length === 0 || currentIndex >= currentJobs.length) {
       console.log('No valid job to ignore');
       return;
     }
 
-    const currentJob = jobs[currentIndex];
+    const currentJob = currentJobs[currentIndex];
     console.log('Current job data:', currentJob ? JSON.stringify(currentJob.title) : 'undefined');
     
     if (!currentJob) {
@@ -360,39 +362,39 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
   return (
     <Animated.View 
       style={[styles.cardContainer, getCardStyle()]} 
-      {...(panResponder.current ? panResponder.current.panHandlers : {})}
+      {...(panResponder.current && !loading && jobs.length > 0 ? panResponder.current.panHandlers : {})}
     >
       <View style={styles.card}>
-        <Text style={styles.jobTitle}>{job.title}</Text>
+        <Text style={styles.jobTitle}>{job?.title || 'Loading...'}</Text>
         
         <View style={styles.employerContainer}>
           <Text style={styles.employerLabel}>Employer:</Text>
-          <Text style={styles.employerName}>{job.employer.full_name}</Text>
-          <Text style={styles.employerEmail}>{job.employer.email}</Text>
+          <Text style={styles.employerName}>{job?.employer?.full_name || 'Loading...'}</Text>
+          <Text style={styles.employerEmail}>{job?.employer?.email || ''}</Text>
         </View>
         
         <View style={styles.detailsContainer}>
           <Text style={styles.detailLabel}>Location:</Text>
-          <Text style={styles.detailText}>{job.location}</Text>
+          <Text style={styles.detailText}>{job?.location || 'Not specified'}</Text>
           
           <Text style={styles.detailLabel}>Job Type:</Text>
-          <Text style={styles.detailText}>{job.job_type}</Text>
+          <Text style={styles.detailText}>{job?.job_type || 'Not specified'}</Text>
           
           <Text style={styles.detailLabel}>Salary Range:</Text>
-          <Text style={styles.detailText}>{job.salary_range}</Text>
+          <Text style={styles.detailText}>{job?.salary_range || 'Not specified'}</Text>
         </View>
         
         <View style={styles.descriptionContainer}>
           <Text style={styles.detailLabel}>Description:</Text>
           <Text style={styles.descriptionText} numberOfLines={5}>
-            {job.description}
+            {job?.description || 'No description provided'}
           </Text>
         </View>
         
         <View style={styles.requirementsContainer}>
           <Text style={styles.detailLabel}>Requirements:</Text>
           <Text style={styles.requirementsText} numberOfLines={3}>
-            {job.requirements}
+            {job?.requirements || 'No specific requirements'}
           </Text>
         </View>
         

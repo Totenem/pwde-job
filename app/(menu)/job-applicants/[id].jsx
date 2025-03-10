@@ -166,7 +166,7 @@ const JobApplicants = () => {
         
         <Text className="font-lexend text-white mt-2">{applicant.email}</Text>
         
-        {applicant.skills && applicant.skills.length > 0 && (
+        {applicant.skills && Array.isArray(applicant.skills) && applicant.skills.length > 0 && (
           <View className="mt-2">
             <Text className="font-lexend text-white opacity-70">Skills:</Text>
             <View className="flex-row flex-wrap mt-1">
