@@ -131,7 +131,7 @@ const AdditionalInfoEmployer = () => {
           <View className="mt-2">
             <Dropdown
               otherStyles='mt-5'
-              title='SELECT SKILLS'
+              title='SKILLS YOU ARE LOOKING FOR'
               options={availableSkills.map(skill => skill.name)}
               placeholder="Select a Skill"
               onSelect={(skill) => handleSkillSelect(skill, 0)}

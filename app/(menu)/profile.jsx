@@ -22,7 +22,7 @@ const Profile = () => {
       if (session) {
         const { data, error } = await supabase
           .from('profiles')
-          .select('*')
+          .select('id, full_name, email, avatar_url, user_type, skills')
           .eq('id', session.user.id)
           .single()
 
@@ -81,6 +81,30 @@ const Profile = () => {
               editType={false}
             />
           </View>
+
+          {/*skiils logic showing of skills*/}
+          {userData?.skills && (
+            <View className="mt-7">
+              <Text className="font-lexend-bold text-xl mb-3">Skills</Text>
+              <View className="flex-row flex-wrap">
+                {(typeof userData.skills === 'string' ? JSON.parse(userData.skills) : userData.skills).map((skill, index) => (
+                  <View key={index} className="bg-[#114640] rounded-full px-3 py-1 mr-2 mb-2">
+                    <Text className="font-lexend text-white">{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View>
+          )}
+            {/* <View className="mt-7">
+              <Text className="font-lexend-bold text-xl mb-3">Skills</Text>
+              <View className="flex-row flex-wrap">
+                {userData.skills.map((skill, index) => (
+                  <View key={index} className="bg-[#114640] rounded-full px-3 py-1 mr-2 mb-2">
+                    <Text className="font-lexend text-white">{skill}</Text>
+                  </View>
+                ))}
+              </View>
+            </View> */}
 
           <CustomButton
             title="EDIT PROFILE"

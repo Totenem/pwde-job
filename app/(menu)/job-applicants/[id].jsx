@@ -181,7 +181,7 @@ const JobApplicants = () => {
         
         <View className="flex-row justify-between items-center mt-3 pt-2 border-t border-white/20">
           <View className="bg-white/10 px-3 py-1 rounded-lg">
-            <Text className="font-lexend text-white">Status: {item.status}</Text>
+            <Text className="font-lexend text-white">{item.status}</Text>
           </View>
           
           <View className="flex-row">
