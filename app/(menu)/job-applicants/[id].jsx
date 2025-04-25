@@ -11,12 +11,12 @@ import CustomButton from '../../../components/CustomButton'
  * Allows employers to view applicant details and manage applications
  */
 const JobApplicants = () => {
-  const { id } = useLocalSearchParams() // Get job ID from URL params
-  const [job, setJob] = useState(null)
-  const [applicants, setApplicants] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [refreshing, setRefreshing] = useState(false)
+  const { id } = useLocalSearchParams()   // Extract job ID from URL params
+  const [job, setJob] = useState(null)  // Store job details
+  const [applicants, setApplicants] = useState([]) // Store applicant details
+  const [loading, setLoading] = useState(true) // Track loading state
+  const [error, setError] = useState(null) // Track error state
+  const [refreshing, setRefreshing] = useState(false) // Track refresh state
 
   // Fetch job details and applicants when component mounts
   useEffect(() => {
@@ -124,7 +124,6 @@ const JobApplicants = () => {
    */
   const handleViewProfile = (applicantId) => {
     // Navigate to applicant profile view
-    // This would be implemented in a separate screen
     Alert.alert('View Profile', 'Navigate to applicant profile (to be implemented)')
     // router.push(`/applicant-profile/${applicantId}`)
   }
@@ -166,7 +165,7 @@ const JobApplicants = () => {
         
         <Text className="font-lexend text-white mt-2">{applicant.email}</Text>
         
-        {applicant.skills && Array.isArray(applicant.skills) && applicant.skills.length > 0 && (
+        {/* {applicant.skills && Array.isArray(applicant.skills) && applicant.skills.length > 0 && (
           <View className="mt-2">
             <Text className="font-lexend text-white opacity-70">Skills:</Text>
             <View className="flex-row flex-wrap mt-1">
@@ -177,7 +176,7 @@ const JobApplicants = () => {
               ))}
             </View>
           </View>
-        )}
+        )} */}
         
         <View className="flex-row justify-between items-center mt-3 pt-2 border-t border-white/20">
           <View className="bg-white/10 px-3 py-1 rounded-lg">

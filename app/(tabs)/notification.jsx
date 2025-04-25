@@ -11,16 +11,10 @@ const NotificationItem = ({ type, title, message, time }) => {
           iconColor: 'bg-[#00ccb4]',
           icon: '🎯'
         }
-      case 'message':
-        return {
-          bgColor: 'bg-[#114640]',
-          iconColor: 'bg-button',
-          icon: '💬'
-        }
       case 'rejection':
         return {
           bgColor: 'bg-[#114640]',
-          iconColor: 'bg-red-500',
+          iconColor: 'bg-button',
           icon: '❌'
         }
       default:
@@ -62,26 +56,14 @@ const Notification = () => {
     {
       type: 'job-match',
       title: 'New Job Match',
-      message: 'A new UI/UX Designer position matches your skills!',
+      message: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
       time: '2m ago'
-    },
-    {
-      type: 'message',
-      title: 'New Message',
-      message: 'Tech Corp: "We would like to schedule an interview..."',
-      time: '1h ago'
     },
     {
       type: 'rejection',
       title: 'Application Update',
-      message: 'Your application for Senior Developer at InnoTech was not selected.',
+      message: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry.',
       time: '2h ago'
-    },
-    {
-      type: 'job-match',
-      title: 'Job Match',
-      message: 'New Web Developer position at Digital Solutions Inc.',
-      time: '3h ago'
     },
   ]
 

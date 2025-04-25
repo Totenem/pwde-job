@@ -83,7 +83,7 @@ const Home = () => {
       <View className="flex-1 px-4 py-4">
         <View className="flex-row justify-between items-center mb-4">
           <Text className="font-lexend-bold text-3xl text-tcolor">Home</Text>
-          <TouchableOpacity 
+          {/* <TouchableOpacity 
             className="bg-[#114640] w-10 h-10 rounded-full justify-center items-center"
             onPress={fetchUserProfile}
           >
@@ -92,7 +92,7 @@ const Home = () => {
               className="w-5 h-5" 
               resizeMode="contain"
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         
         {loading ? (

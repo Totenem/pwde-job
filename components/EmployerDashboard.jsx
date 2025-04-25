@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { router } from 'expo-router';
 
@@ -165,16 +165,30 @@ const EmployerDashboard = () => {
     const openJobs = jobs.filter(job => job.status === 'open').length;
     
     return (
-      <View className="flex-row justify-between mb-6">
-        <View className="bg-[#114640] rounded-xl p-4 w-[48%]">
-          <Text className="font-lexend text-white">Total Jobs</Text>
-          <Text className="font-lexend-bold text-white text-2xl">{jobs.length}</Text>
-          <Text className="font-lexend text-white text-sm">{openJobs} Active</Text>
+      <View className="mb-6">
+        <View className="flex-row justify-end mb-2">
+          <TouchableOpacity 
+            className="bg-[#114640] w-10 h-10 rounded-full justify-center items-center"
+            onPress={fetchJobsWithApplications}
+          >
+            <Image 
+              source={require('../assets/icons/refresh.png')} 
+              className="w-5 h-5" 
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </View>
-        <View className="bg-[#114640] rounded-xl p-4 w-[48%]">
-          <Text className="font-lexend text-white">Applications</Text>
-          <Text className="font-lexend-bold text-white text-2xl">{totalApplications}</Text>
-          <Text className="font-lexend text-white text-sm">Across all jobs</Text>
+        <View className="flex-row justify-between">
+          <View className="bg-[#114640] rounded-xl p-4 w-[48%]"> 
+            <Text className="font-lexend text-white">Total Jobs</Text>
+            <Text className="font-lexend-bold text-white text-2xl">{jobs.length}</Text>
+            <Text className="font-lexend text-white text-sm">{openJobs} Active</Text>
+          </View>
+          <View className="bg-[#114640] rounded-xl p-4 w-[48%]">
+            <Text className="font-lexend text-white">Applications</Text>
+            <Text className="font-lexend-bold text-white text-2xl">{totalApplications}</Text>
+            <Text className="font-lexend text-white text-sm">Across all jobs</Text>
+          </View>
         </View>
       </View>
     );
