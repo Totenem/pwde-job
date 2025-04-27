@@ -7,6 +7,9 @@ import CustomButton from '../../components/CustomButton'
 import { useState } from 'react'
 import { Link, router } from 'expo-router'
 import { supabase } from '../../lib/supabase'
+import * as SecureStore from 'expo-secure-store';
+
+
 
 // SignIn component - Handles user authentication and login functionality
 const SignIn = () => {
@@ -19,62 +22,7 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
   
-  // Check for existing session when component mounts
-  useEffect(() => {
-    checkUser();
-  }, []);
   
-  // Function to verify if user is already authenticated
-  const checkUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-      // Redirect authenticated users to home screen
-      router.replace('/home');
-    }
-  };
-  
-  // Handle user sign in process
-  const handleSignIn = async () => {
-    // Form validation
-    if (!form.email || !form.password) {
-      setError('Please fill in all fields')
-      return
-    }
-  
-    setIsLoading(true)
-    setError(null)
-  
-    try {
-      // Attempt to authenticate user with Supabase
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email: form.email,
-        password: form.password,
-      })
-  
-      if (signInError) throw signInError
-  
-      // Fetch user profile to determine user type
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('user_type')
-        .eq('id', data.user.id)
-        .single()
-  
-      if (profileError) throw profileError
-  
-      // Route user based on their profile type
-      if (profile.user_type === 'employee') {
-        router.replace('/home')
-      } else {
-        // Default route for other user types
-        router.replace('/home')
-      }
-    } catch (error) {
-      setError(error.message)
-    } finally {
-      setIsLoading(false)
-    }
-  }
   
   return (
     <SafeAreaView className="h-full bg-primary">
@@ -125,7 +73,7 @@ const SignIn = () => {
           {/* Sign in button */}
           <CustomButton 
             title="Sign In"
-            handlePress={handleSignIn}
+            handlePress={() => router.push('/home')}
             containerStyles="mt-7"
             isLoading={isLoading}
             textStyles="font-lexend-bold"

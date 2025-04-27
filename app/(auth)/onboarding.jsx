@@ -38,12 +38,6 @@ const Onboarding = () => {
               containerStyles="w-full mt-7"
               textStyles="font-lexend-bold"
           />
-          <CustomButton 
-              title="EMPLOYER"
-              handlePress = {() => router.push('/sign-up-employeer')} //Linking to employer registration
-              containerStyles="w-full mt-7"
-              textStyles="font-lexend-bold"
-          />
 
         </View>
       </ScrollView>

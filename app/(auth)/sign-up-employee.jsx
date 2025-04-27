@@ -24,63 +24,7 @@ const SignUpEmployee = () => {
   const [error, setError] = useState(null)
 
   // Handle form submission and user registration
-  const handleSubmit = async () => {
-    // Basic validation
-    if (formData.password !== formData.confirmPassword) {
-      setError("Passwords don't match")
-      return
-    }
 
-    setLoading(true)
-    setError(null)
-
-    try {
-      // Sign up the user with Supabase authentication
-      const { data: { user }, error: signUpError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName,
-            user_type: 'employee'
-          }
-        }
-      })
-
-      if (signUpError) throw signUpError
-
-      // Get the session to ensure we're authenticated
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      if (sessionError) throw sessionError
-
-      if (session) {
-        // Create user profile in the profiles table
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert([
-            {
-              id: user.id,
-              full_name: formData.fullName,
-              email: formData.email,
-              user_type: 'employee'
-            }
-          ])
-          .select()
-
-        if (profileError) throw profileError
-
-        // Navigate to additional information form
-        router.push('/additional-info-employee')
-      } else {
-        // Redirect to sign-in if session is not available
-        router.push('/sign-in')
-      }
-    } catch (error) {
-      setError(error.message)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   return (
     <SafeAreaView className="h-full bg-primary">
@@ -100,7 +44,7 @@ const SignUpEmployee = () => {
             title="Full Name"
             value={formData.fullName}
             placeholder="Enter Full Name"
-            handleChangeText={(text) => setFormData({...formData, fullName: text})}
+            // handleChangeText={(text) => setFormData({...formData, fullName: text})}
             keyboardType="default"
             otherStyles="mt-7"
           />
@@ -108,7 +52,7 @@ const SignUpEmployee = () => {
             title="Email"
             value={formData.email}
             placeholder="Enter Email"
-            handleChangeText={(text) => setFormData({...formData, email: text})}
+            // handleChangeText={(text) => setFormData({...formData, email: text})}
             keyboardType="email-address"
             otherStyles="mt-7"
           />
@@ -116,7 +60,7 @@ const SignUpEmployee = () => {
             title="Password"
             value={formData.password}
             placeholder="Enter Password"
-            handleChangeText={(text) => setFormData({...formData, password: text})}
+            // handleChangeText={(text) => setFormData({...formData, password: text})}
             keyboardType="default"
             secureTextEntry
             otherStyles="mt-7"
@@ -125,7 +69,7 @@ const SignUpEmployee = () => {
             title="Confirm Password"
             value={formData.confirmPassword}
             placeholder="Confirm Your Password"
-            handleChangeText={(text) => setFormData({...formData, confirmPassword: text})}
+            // handleChangeText={(text) => setFormData({...formData, confirmPassword: text})}
             keyboardType="default"
             secureTextEntry
             otherStyles="mt-7"
@@ -134,7 +78,7 @@ const SignUpEmployee = () => {
           {/* Submit button */}
           <CustomButton 
             title="Next"
-            handlePress={handleSubmit}
+            handlePress={() => router.push('/additional-info-employee')}
             containerStyles="mt-7"
             isLoading={loading}
             textStyles="font-lexend-bold"

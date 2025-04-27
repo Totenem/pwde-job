@@ -12,30 +12,6 @@ const Profile = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState(null)
 
-  useEffect(() => {
-    fetchProfile()
-  }, [])
-
-  const fetchProfile = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (session) {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('id, full_name, email, avatar_url, user_type, skills')
-          .eq('id', session.user.id)
-          .single()
-
-        if (error) throw error
-        if (data) {
-          setUserData(data)
-          // setImage(data.avatar_url)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching profile:', error)
-    }
-  }
 
 
   return (
@@ -45,26 +21,26 @@ const Profile = () => {
           <Text className="font-lexend-bold text-3xl">Profile</Text>
 
           <ProfilePicture
-            onImageSelect={async (filePath) => {
-              try {
-                setIsSubmitting(true)
-                const { error: updateError } = await supabase
-                  .from('profiles')
-                  .update({ avatar_url: filePath })
-                  .eq('id', userData?.id)
-                if (updateError) throw updateError
-                // Refresh profile data
-                fetchProfile()
-              } catch (err) {
-                setError(err.message)
-              } finally {
-                setIsSubmitting(false)
-              }
-            }}
-            onError={setError}
-            initialImageUrl={userData?.avatar_url}
-            isSubmitting={isSubmitting}
-            userId={userData?.id}
+            // onImageSelect={async (filePath) => {
+            //   try {
+            //     setIsSubmitting(true)
+            //     const { error: updateError } = await supabase
+            //       .from('profiles')
+            //       .update({ avatar_url: filePath })
+            //       .eq('id', userData?.id)
+            //     if (updateError) throw updateError
+            //     // Refresh profile data
+            //     fetchProfile()
+            //   } catch (err) {
+            //     setError(err.message)
+            //   } finally {
+            //     setIsSubmitting(false)
+            //   }
+            // }}
+            // onError={setError}
+            // initialImageUrl={userData?.avatar_url}
+            // isSubmitting={isSubmitting}
+            // userId={userData?.id}
           />
 
           <View className="mt-7">
@@ -111,8 +87,6 @@ const Profile = () => {
             handlePress={() => {
               if (userData?.user_type === 'employee') {
                 router.push('/additional-info-employee')
-              } else if (userData?.user_type === 'employer') {
-                router.push('/additional-info-employer')
               }
             }}
             containerStyles="w-full mt-7"

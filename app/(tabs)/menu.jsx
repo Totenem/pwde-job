@@ -81,16 +81,6 @@ const Menu = () => {
             textStyles="font-lexend-bold"
           />
           {/* Job Listings button - Only visible for employer accounts */}
-          {userData?.user_type === 'employer' && (
-            <BoxRouting
-              title="Job Listings"
-              icon={icons.bookmark}
-              handlePress={() => router.push('/job-listings')}
-              containerStyles="mt-7"
-              isLoading={false}
-              textStyles="font-lexend-bold"
-            />
-          )}
           {/* Sign out button with logout functionality */}
           <BoxRouting
             title="Sign Out"

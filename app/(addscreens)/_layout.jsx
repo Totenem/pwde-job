@@ -10,10 +10,6 @@ const AdditionalInfo = () => {
           name='additional-info-employee' 
           options={{headerShown: false}} 
         />
-        <Stack.Screen 
-          name='additional-info-employer' 
-          options={{headerShown: false}} 
-        />
         <Stack.Screen
           name='chat'
           options={{headerShown: false}}

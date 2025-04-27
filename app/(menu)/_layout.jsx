@@ -22,23 +22,7 @@ const MenuLayout = () => {
           name='about'
           options={{headerShown: false}}
         />
-        <Stack.Screen
-          name='job-listings'
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name='create-job'
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name='job/[id]'
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name='job-applicants/[id]'
-          options={{headerShown: false}}
-        />
-       </Stack>
+      </Stack>
     </>
   )
 }

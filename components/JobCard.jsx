@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { View, Text, StyleSheet, Animated, PanResponder, Dimensions, TouchableOpacity } from 'react-native';
 import { supabase } from '../lib/supabase';
+import * as SecureStore from 'expo-secure-store';
 
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = 120;
@@ -75,7 +76,8 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
       console.log('Fetching jobs...');
       
       // Get current user session
-      const { data: { session } } = await supabase.auth.getSession();
+      const session = await SecureStore.getItemAsync('user_profile');
+      // console.log('Session:', session);
       
       if (!session) {
         console.log('No active session found');
@@ -83,8 +85,33 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
         setLoading(false);
         return;
       }
-      
-      console.log('User authenticated:', session.user.id);
+
+      let sessionParse;
+      let userId;
+
+      try {
+        sessionParse = JSON.parse(session);
+        // console.log('Parsed session:', sessionParse);
+        
+        userId = sessionParse;
+        
+        
+        console.log('Extracted user ID:', userId);
+      } catch (err) {
+        console.log('Failed to parse session:', err);
+        setError('Corrupted session data. Please sign in again.');
+        setLoading(false);
+        return;
+      }
+
+      if (!userId) {
+        console.log('Could not find user ID in session data:', session);
+        setError('Invalid session. Please sign in again.');
+        setLoading(false);
+        return;
+      }
+
+      // console.log('User authenticated:', userId);
       
       // Fetch jobs from Supabase that are open
       const { data: jobsData, error: jobsError } = await supabase
@@ -110,7 +137,7 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
       const { data: applications, error: applicationsError } = await supabase
         .from('job_applications')
         .select('job_id')
-        .eq('applicant_id', session.user.id);
+        .eq('applicant_id', userId);
         
       if (applicationsError) {
         console.error('Error fetching applications:', applicationsError);
@@ -202,10 +229,33 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
         console.log('Applying to job:', currentJob.title);
         
         // Get current user session
-        const { data: { session } } = await supabase.auth.getSession();
+        const sessionStored = await SecureStore.getItemAsync('user_profile');
+        let parsedSession;
+        let userId;
         
-        if (!session) {
-          console.error('No active session found. Please sign in again.');
+        try {
+          parsedSession = JSON.parse(sessionStored);
+          
+          // Try to find user ID in different possible locations
+          if (parsedSession?.user?.id) {
+            userId = parsedSession.user.id;
+          } else if (parsedSession?.id) {
+            userId = parsedSession.id;
+          } else if (parsedSession?.user_id) {
+            userId = parsedSession.user_id;
+          } else if (typeof parsedSession === 'string') {
+            // In case the stored value is a string ID itself
+            userId = parsedSession;
+          }
+          
+          console.log('Extracted user ID for application:', userId);
+        } catch (e) {
+          console.error('Failed to parse session in swipeRight:', e);
+          return;
+        }
+        
+        if (!userId) {
+          console.error('Invalid session. No user ID found.');
           return;
         }
 
@@ -214,7 +264,7 @@ const JobCard = ({ onSwipeLeft, onSwipeRight }) => {
           .from('job_applications')
           .insert({
             job_id: currentJob.id,
-            applicant_id: session.user.id,
+            applicant_id: userId,
             status: 'pending',
           });
           
